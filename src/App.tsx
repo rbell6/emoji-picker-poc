@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { schema } from "prosemirror-schema-basic";
-import { toggleMark } from "prosemirror-commands";
 import { EditorState } from "prosemirror-state";
-import { ProseMirror, useEditorEventCallback } from "@nytimes/react-prosemirror";
+import { ProseMirror } from "@nytimes/react-prosemirror";
+import emojiData from '@emoji-mart/data';
+import Picker from '@emoji-mart/react';
 import './App.css'
 
 
 function App() {
-
 	const [mount, setMount] = useState<HTMLElement | null>(null);
 	const [state, setState] = useState(() => EditorState.create({ schema }));
 
@@ -19,8 +19,12 @@ function App() {
 					state={state}
 					dispatchTransaction={(tr) => setState(state.apply(tr))}>
 					<div className="toolbar">
-						<BoldButton />
-						<ItalicsButton />
+						<button popovertarget="emojipopover">{'\u{1F600}'}</button>
+						<div popover="auto" id="emojipopover" style={{ top: 'anchor(top)' }}>
+							<Picker set="native" data={emojiData} onEmojiSelect={(emoji) => {
+								setState(state.apply(state.tr.insertText(emoji.native || '')));
+							}} />
+						</div>
 					</div>
 					<div ref={setMount} />
 				</ProseMirror>
@@ -28,23 +32,5 @@ function App() {
 		</div>
 	)
 }
-
-function BoldButton() {
-	const onClick = useEditorEventCallback((view) => {
-		const toggleBoldMark = toggleMark(view.state.schema.marks.strong);
-		toggleBoldMark(view.state, view.dispatch, view);
-	});
-	
-	return <button onClick={onClick}>Bold</button>;
-}
-
-function ItalicsButton() {
-	const onClick = useEditorEventCallback((view) => {
-		toggleMark(view.state.schema.marks.em)(view.state, view.dispatch, view);
-	});
-	
-	return <button onClick={onClick}>Italics</button>;
-}
-
 
 export default App
